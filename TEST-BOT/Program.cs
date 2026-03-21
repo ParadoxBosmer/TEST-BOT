@@ -5,35 +5,35 @@ using System.Net.Http.Json;
 using System.Text;
 using Newtonsoft.Json;
 using SharedLibrary;
+using SharedLibrary.DTOs;
 
 string baseURL = "http://localhost:8080/";
 
 Console.WriteLine("DOBRODOŠAO U AIBG V5.0 IGRU \n\n\n");
 
 
-Console.WriteLine("Ukucaj Id svog lika - mora biti broj");
-int id= Convert.ToInt32(Console.ReadLine());
+Console.WriteLine("Ukucaj ime svog lika");
+string name= Console.ReadLine();
 Player player=new Player();
 Console.WriteLine("Ukucaj sifru svoje igre");
 string gameId = Console.ReadLine();
 
 HttpClient client = new HttpClient();
-string s = $"{baseURL}game/connect/{gameId}/{id}";
+string s = $"{baseURL}game/connect/{gameId}/{name}";
 var result = await client.PostAsync(s,null);
 
 if (result.IsSuccessStatusCode)
 {
     string jsonString = await result.Content.ReadAsStringAsync();
     
-    Map map = JsonConvert.DeserializeObject<Map>(jsonString);
+    HTTP_ResponseDTO response = JsonConvert.DeserializeObject<HTTP_ResponseDTO>(jsonString);
     
     Console.WriteLine($"Mapa uspešno učitana!");
-    Console.WriteLine(map);
-    var field=map.Grid.Find(info => info.Entity != null && info.Entity.Id == id && info.Entity is Player);
-    player = (Player)field.Entity;
-    Console.WriteLine(player.Name);
-    Console.WriteLine(player.Id);
-    Console.WriteLine(player.Position.X +" "+ player.Position.Y);
+    Console.WriteLine(response.map.ToString());
+    player = response.player;
+    Console.WriteLine("Ovde stoji ime bota" +player.Name);
+    Console.WriteLine("Id: "+ player.Id);
+    Console.WriteLine("Position: "+ player.Position.X +" "+ player.Position.Y);
 }
 else
 {
@@ -64,13 +64,12 @@ result = await client.PutAsync(move1,httpContent);
 if (result.IsSuccessStatusCode)
 {
     string jsonString = await result.Content.ReadAsStringAsync();
-    
-    Map map = JsonConvert.DeserializeObject<Map>(jsonString);
+
+    HTTP_ResponseDTO response = JsonConvert.DeserializeObject<HTTP_ResponseDTO>(jsonString);
     
     Console.WriteLine($"Pomereno uspesno");
-    var field=map.Grid.Find(info => info.Entity != null && info.Entity.Id == id && info.Entity is Player);
-    player = (Player)field.Entity;
-    Console.WriteLine($"filed je {field.Position.X},{field.Position.Y}");
+    player = response.player;
+    Console.WriteLine($"filed je {player.Position.X},{player.Position.Y}");
     Console.WriteLine($"Trenutno stanje igraca je sledece \n ({player.Position.X},{player.Position.Y})");
 }
 else
