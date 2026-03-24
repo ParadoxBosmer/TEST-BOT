@@ -6,21 +6,24 @@ using System.Text;
 using Newtonsoft.Json;
 using SharedLibrary;
 using SharedLibrary.DTOs;
+using TEST_BOT;
 
 string baseURL = "http://localhost:8080/";
 
 Console.WriteLine("DOBRODOŠAO U AIBG V5.0 IGRU \n\n\n");
 
+MiniMaxAlgorithm algorithm = new MiniMaxAlgorithm();
 
 Console.WriteLine("Ukucaj ime svog lika");
 string name= Console.ReadLine();
 Player player=new Player();
 Console.WriteLine("Ukucaj sifru svoje igre");
 string gameId = Console.ReadLine();
-
 HttpClient client = new HttpClient();
 string s = $"{baseURL}game/connect/{gameId}/{name}";
 var result = await client.PostAsync(s,null);
+
+Map map = null;
 
 if (result.IsSuccessStatusCode)
 {
@@ -30,6 +33,7 @@ if (result.IsSuccessStatusCode)
     
     Console.WriteLine($"Mapa uspešno učitana!");
     Console.WriteLine(response.map.ToString());
+    map = response.map;
     player = response.player;
     Console.WriteLine("Ovde stoji ime bota" +player.Name);
     Console.WriteLine("Id: "+ player.Id);
@@ -46,6 +50,8 @@ MoveRequest mr = new MoveRequest(){Direction = Direction.UP,newPosition = new Po
 
 if (player.Position.X > 0)
 {
+    algorithm.GetBestTarget(map, player);
+    
     mr.Direction = Direction.DOWN;
     var newPos = new Position(player.Position.X, player.Position.Y-1);
     mr.newPosition = newPos;
@@ -76,6 +82,8 @@ else
 {
     Console.WriteLine($"Greška na serveru: {result.StatusCode}");
 }
+
+
 
 Console.WriteLine("\nPritisni Enter za izlaz...");
 Console.ReadLine();
