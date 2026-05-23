@@ -1,5 +1,16 @@
 # Monster Hunt Bot - API Dokumentacija
 
+## Preuzimanje sa Git Repozitorijuma
+
+Klonirate verziju sa GitHub repozitorijuma:
+
+```bash
+git clone https://github.com/ParadoxBosmer/TEST-BOT.git
+```
+Unutra postoje modeli koji vam mogu poslužiti za rad kao i kosturi za dozvoljene programske jezike. 
+
+---
+
 ## Objašnjenje toka poteza
 
 Svaki igrač ima `First` property (boolean):
@@ -8,22 +19,8 @@ Svaki igrač ima `First` property (boolean):
 
 Ciklus poteza: **Player1Turn → Player2Turn → MonsterTurn → Player1Turn**
 
-### Detekcija poteza
 
-```python
-my_player = game_state["Players"][str(my_player_id)]
-is_first = my_player["First"]
-game_state_str = game_state["GameState"]
-
-is_my_turn = (
-    (is_first and game_state_str == "Player1Turn") or
-    (not is_first and game_state_str == "Player2Turn")
-)
-```
-
----
-
-## HTTP Endpoints
+## HTTP Pozivi
 
 **VAŽNO**: Svaki od sledećih PUT endpoints **automatski vraća kompletno stanje igre** u response-u, tako da nije potrebno eksplicitno pozivati GET /game/state.
 
@@ -40,19 +37,6 @@ Pomera igrača na novu poziciju.
   "newPosition": { "X": 5, "Y": 7 }
 }
 ```
-
-**Response** (200 OK):
-```json
-{
-  "success": true
-}
-```
-
-**Error Response**:
-- **400**: Nevalidna pozicija
-- **409**: Nije vaš potez
-- **404**: Nevalidan game/player ID
-
 ---
 
 ### 2. PUT /player/{attackerId}/attack/{attackedId}/gameId/{gameId}
@@ -142,46 +126,16 @@ Prizovite monstruma iz kartice.
 ### Map.Grid
 Lista svih polja na mapi sa informacijama o preprekama:
 
-```json
-{
-  "Map": {
-    "X": 32,
-    "Y": 16,
-    "Grid": [
-      {
-        "Position": { "X": 5, "Y": 7 },
-        "FieldType": 3,
-        "Entity": null,
-        "Item": null
-      }
-    ]
-  }
-}
-```
 
 **FieldType vrednosti**:
 - `0` = **BASE** (baza)
 - `1` = **NORMAL** (obično polje, može se hodati)
 - `2` = **OBSTACLE_SLOW** (usporava kretanje)
-- `3` = **OBSTACLE** (prepreka, **NE MOŽE SE HODATI**)
+- `3` = **OBSTACLE** (prepreka)
 - `4` = **POWERUP** (power-up)
-- `5` = **WALL** (zid, **NE MOŽE SE HODATI**)
+- `5` = **WALL** (zid)
 - `6` = **EMPTY** (prazno)
 
-### Korišćenje u strategiji
-
-Proverite `FieldType` pre svakog poteza da izbegnete prepreke:
-
-```python
-def is_walkable(x, y, map_grid):
-    for field in map_grid:
-        pos = field.get('Position')
-        if pos and pos['X'] == x and pos['Y'] == y:
-            field_type = field['FieldType']
-            if field_type == 3 or field_type == 5:  # OBSTACLE ili WALL
-                return False
-    return True
-```
 
 **Mapa je 32×16** (X: 0-31, Y: 0-15)
 
