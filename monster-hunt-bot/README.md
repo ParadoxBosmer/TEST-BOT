@@ -71,11 +71,11 @@ Koristi item iz inventara.
 
 ---
 
-### 4. PUT /map/pickup/{playerId}/gameId/{gameId}
+### 4. PUT /player/pickup/{playerId}/gameId/{gameId}
 
 Pokupite karticu sa mape.
 
-**URL**: `PUT http://localhost:8080/map/pickup/{playerId}/gameId/{gameId}`
+**URL**: `PUT http://localhost:8080/player/pickup/{playerId}/gameId/{gameId}`
 
 **Request Body**:
 ```json
@@ -113,6 +113,108 @@ Prizovite monstruma iz kartice.
 {
   "success": true,
   "monsterId": 456
+}
+```
+
+# FieldInfo Dokumentacija
+
+## Struktura FieldInfo
+
+```csharp
+public class FieldInfo
+{
+    public Position? Position;
+    [JsonProperty(TypeNameHandling = TypeNameHandling.Auto)]
+    public Entity? Entity;
+    public Field FieldType;
+    public Player? Owner;
+    public Item? Item;
+    public MonsterCard? MonsterCard;
+    public Obstacle? Obstacle;
+}
+```
+
+### Svojstva:
+- **Position**: Koordinate polja (X, Y)
+- **Entity**: Bilo koji entitet na tom polju (igrač/čudovište)
+- **FieldType**: Tip polja (NORMAL, itd.)
+- **Owner**: Igrač koji poseduje polje
+- **Item**: Predmet prisutan na polju
+- **MonsterCard**: Karta čudovišta na polju
+- **Obstacle**: Bilo koja prepreka
+
+## Kako se poziva
+
+### 1. MapController - PickUpCard
+```csharp
+[HttpPut("pickup/{playerId}/gameId/{gameId}")]
+public async Task<IActionResult> PickUpCard(
+    [FromRoute] int playerId, 
+    [FromRoute] string gameId,
+    [FromBody] FieldInfo fieldInfo, 
+    CancellationToken cancellationToken)
+{
+    _playerServices.PickupCard(gameId, playerId, fieldInfo);
+}
+```
+
+### 2. PlayerController - PickUpItem
+```csharp
+[HttpPut("pickup/{playerId}/gameId/{gameId}")]
+public async Task<IActionResult> PickUpItem(
+    [FromRoute] string gameId,
+    [FromBody] FieldInfo fieldInfo, 
+    [FromRoute] int playerId, 
+    CancellationToken cancellationToken)
+{
+    _playerServices.PickupItem(gameId, player.Id, fieldInfo);
+}
+```
+
+## Primer strukture povratka
+
+Kada se vraća kao JSON, FieldInfo izgleda ovako:
+
+```json
+{
+  "Position": {
+    "X": 5,
+    "Y": 3
+  },
+  "Entity": null,
+  "FieldType": "NORMAL",
+  "Owner": null,
+  "Item": {
+    "ItemType": "HEALTH_POTION",
+    "Value": 50
+  },
+  "MonsterCard": null,
+  "Obstacle": null
+}
+```
+
+Ili sa entitetom:
+
+```json
+{
+  "Position": {
+    "X": 2,
+    "Y": 7
+  },
+  "Entity": {
+    "$type": "Player",
+    "Id": 1,
+    "Name": "PlayerOne",
+    "Health": 100
+  },
+  "FieldType": "NORMAL",
+  "Owner": {
+    "Id": 1,
+    "Name": "PlayerOne"
+  },
+  "Item": null,
+  "MonsterCard": null,
+  "Obstacle": null
 }
 ```
 
